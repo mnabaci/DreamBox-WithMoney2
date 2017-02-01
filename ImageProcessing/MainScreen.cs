@@ -25,8 +25,6 @@ namespace ImageProcessing
         System.Threading.Thread coinSelectorThread;
         CoinSelector coinSelector;
         CoinSelectorError coinSelectorError;
-        ImageCollection _selectedImage;
-        CopyCount copyCount;
         public MainScreen()
         {
             InitializeComponent();

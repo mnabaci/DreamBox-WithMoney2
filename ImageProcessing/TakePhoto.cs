@@ -29,12 +29,12 @@ namespace ImageProcessing
         CoinSelector coinSelector;
         System.Timers.Timer coinWaitTimer;
         CopyCount copyCount;
-        int printedCopies = 0;
         public TakePhoto(ImageCollection image, NikonDevice device,CoinSelector selector)
         {
             InitializeComponent();
             this.DoubleBuffered = true;
-
+            this.Cursor = new Cursor(GetType(), "hand128.cur");
+            Cursor.Hide();
             CenterComponents();
 
             coinSelector = selector;
@@ -80,14 +80,34 @@ namespace ImageProcessing
             {
                 pictureBox9.Image = generateCoinImage(args.RemainedCoinValue);
             });
+            double remainingValue = Settings.Instance.COST * copyCount.Count - args.RemainedCoinValue;
             if (args.RemainedCoinValue >= Settings.Instance.COST * copyCount.Count)
             {
                 if (coinSelector.PollingEnabled)
                     coinSelector.PollingEnabled = false;
                 coinWaitTimer.Enabled = false;
+                pictureBox10.Invoke((MethodInvoker)delegate
+                {
+                    pictureBox10.Visible = true;
+                });
             }
             else
-                coinWaitTimer.Enabled = true;
+            {
+                coinWaitTimer.Enabled = true; 
+                pictureBox10.Invoke((MethodInvoker)delegate
+                {
+                    pictureBox10.Visible = false;
+                });
+            }
+            double[] enabledValues = new double[3];
+            if (remainingValue >= CoinValues.TRY025)
+                enabledValues[0] = CoinValues.TRY025;
+            if (remainingValue >= CoinValues.TRY050)
+                enabledValues[1] = CoinValues.TRY050;
+            if (remainingValue >= CoinValues.TRY100)
+                enabledValues[2] = CoinValues.TRY100;
+            coinSelector.SetEnabledCoins(enabledValues);
+            
         }
         void coinWaitTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
@@ -142,7 +162,26 @@ namespace ImageProcessing
             printImage = test.CImage;
             this.BackgroundImage = new Bitmap(printImage);
             pictureBox1.Image = null;
-            coinSelector.PollingEnabled = true;
+            Cursor.Show();
+            if (coinSelector.RemainedCoin < copyCount.Count * Settings.Instance.COST)
+            {
+                pictureBox10.Visible = false;
+                coinSelector.PollingEnabled = true;
+            }
+            else
+            {
+                pictureBox10.Visible = true;
+                coinSelector.PollingEnabled = false;
+            }
+            double remainingValue = Settings.Instance.COST * copyCount.Count - coinSelector.RemainedCoin;
+            double[] enabledValues = new double[3];
+            if (remainingValue >= CoinValues.TRY025)
+                enabledValues[0] = CoinValues.TRY025;
+            if (remainingValue >= CoinValues.TRY050)
+                enabledValues[1] = CoinValues.TRY050;
+            if (remainingValue >= CoinValues.TRY100)
+                enabledValues[2] = CoinValues.TRY100;
+            coinSelector.SetEnabledCoins(enabledValues);
             setPictureCountSelectVisible(true);
 
             //Print(printImage);
@@ -156,7 +195,6 @@ namespace ImageProcessing
             pictureBox7.Visible = value;
             pictureBox8.Visible = value;
             pictureBox9.Visible = value;
-            pictureBox10.Visible = value;
             pictureBox11.Visible = value;
         }
         void CloseForm(object o, ElapsedEventArgs a)
@@ -316,19 +354,48 @@ namespace ImageProcessing
         {
             copyCount.Count += 1;
             if (coinSelector.RemainedCoin < copyCount.Count * Settings.Instance.COST)
+            {
+                pictureBox10.Visible = false;
                 coinSelector.PollingEnabled = true;
+            }
+            else
+            {
+                pictureBox10.Visible = true;
+            }
+            double remainingValue = Settings.Instance.COST * copyCount.Count - coinSelector.RemainedCoin;
+            double[] enabledValues = new double[3];
+            if (remainingValue >= CoinValues.TRY025)
+                enabledValues[0] = CoinValues.TRY025;
+            if (remainingValue >= CoinValues.TRY050)
+                enabledValues[1] = CoinValues.TRY050;
+            if (remainingValue >= CoinValues.TRY100)
+                enabledValues[2] = CoinValues.TRY100;
+            coinSelector.SetEnabledCoins(enabledValues);
             pictureBox5.Image = generateADImage(copyCount.Count);
             pictureBox8.Image = generateTotalCoinImage(copyCount.Count * Settings.Instance.COST);
         }
 
         private void pictureBox7_Click(object sender, EventArgs e)
         {
-            if ((copyCount.Count - 1) * Settings.Instance.COST > coinSelector.RemainedCoin)
+            if ((copyCount.Count - 1) * Settings.Instance.COST >= coinSelector.RemainedCoin)
             {
                 copyCount.Count -= 1;
+                double remainingValue = Settings.Instance.COST * copyCount.Count - coinSelector.RemainedCoin;
+                double[] enabledValues = new double[3];
+                if (remainingValue >= CoinValues.TRY025)
+                    enabledValues[0] = CoinValues.TRY025;
+                if (remainingValue >= CoinValues.TRY050)
+                    enabledValues[1] = CoinValues.TRY050;
+                if (remainingValue >= CoinValues.TRY100)
+                    enabledValues[2] = CoinValues.TRY100;
+                coinSelector.SetEnabledCoins(enabledValues);
                 pictureBox5.Image = generateADImage(copyCount.Count);
                 pictureBox8.Image = generateTotalCoinImage(copyCount.Count * Settings.Instance.COST);
             }
+            if (copyCount.Count * Settings.Instance.COST == coinSelector.RemainedCoin)
+                pictureBox10.Visible = true;
+            else
+                pictureBox10.Visible = false;
         }
 
         private Image getNumberImage(int number)

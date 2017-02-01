@@ -28,8 +28,10 @@ namespace ImageProcessing
         }
         public CopyCount(int maxCount)
         {
-            if (maxCount > 0)
+            if (maxCount > 0 && maxCount <= 10)
                 this._maxCount = maxCount;
+            else if (maxCount > 10)
+                this._maxCount = 10;
             else
                 this._maxCount = 1;
             this._count = 1;

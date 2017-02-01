@@ -12,6 +12,7 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Drawing.Printing;
 using Nikon;
+using ImageProcessing.Properties;
 namespace ImageProcessing
 {
     public partial class TakePhoto : Form
@@ -25,13 +26,20 @@ namespace ImageProcessing
         System.Timers.Timer closingTimer;
         Bitmap printImage;
         Boolean ClosingTimerStarted = false;
-        public TakePhoto(ImageCollection image, NikonDevice device)
+        CoinSelector coinSelector;
+        System.Timers.Timer coinWaitTimer;
+        CopyCount copyCount;
+        int printedCopies = 0;
+        public TakePhoto(ImageCollection image, NikonDevice device,CoinSelector selector)
         {
             InitializeComponent();
-            Cursor.Hide();
             this.DoubleBuffered = true;
 
             CenterComponents();
+
+            coinSelector = selector;
+            coinSelector.OnCoinDetected += coinSelector_OnCoinDetected;
+            coinSelector.PollingEnabled = false;
             // Hook up device capture events
             this.device = device;
             device.ImageReady += new ImageReadyDelegate(device_ImageReady);
@@ -43,6 +51,15 @@ namespace ImageProcessing
             printImage = new Bitmap(Image.BackgroundImage);
             timer = new System.Timers.Timer(1000);
             timer.Elapsed += new ElapsedEventHandler(CountDown);
+            timer.Enabled = false;
+
+            copyCount = new CopyCount(Settings.Instance.CopyCount);
+
+            coinWaitTimer = new System.Timers.Timer();
+            coinWaitTimer.Interval = 60000;
+            coinWaitTimer.Enabled = false;
+            coinWaitTimer.AutoReset = false;
+            coinWaitTimer.Elapsed += coinWaitTimer_Elapsed;
 
             closingTimer = new System.Timers.Timer(6000);
 
@@ -50,6 +67,33 @@ namespace ImageProcessing
             pictureBox1.Image = cItem.Number;
             pictureBox2.Image = cItem.Smile;
             timer.Start();
+
+            pictureBox5.Image = generateADImage(copyCount.Count);
+            pictureBox8.Image = generateTotalCoinImage(copyCount.Count * Settings.Instance.COST);
+            pictureBox9.Image = generateCoinImage(coinSelector.RemainedCoin);
+        }
+
+        void coinSelector_OnCoinDetected(object eventObject, CoinDetectedEventArgs args)
+        {
+            coinWaitTimer.Enabled = false;
+            pictureBox9.Invoke((MethodInvoker)delegate
+            {
+                pictureBox9.Image = generateCoinImage(args.RemainedCoinValue);
+            });
+            if (args.RemainedCoinValue >= Settings.Instance.COST * copyCount.Count)
+            {
+                if (coinSelector.PollingEnabled)
+                    coinSelector.PollingEnabled = false;
+                coinWaitTimer.Enabled = false;
+            }
+            else
+                coinWaitTimer.Enabled = true;
+        }
+        void coinWaitTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            if (coinSelector.PollingEnabled)
+                coinSelector.PollingEnabled = false;
+            coinWaitTimer.Enabled = false;
         }
         void CenterComponents()
         {
@@ -98,13 +142,30 @@ namespace ImageProcessing
             printImage = test.CImage;
             this.BackgroundImage = new Bitmap(printImage);
             pictureBox1.Image = null;
-            Print(printImage);
+            coinSelector.PollingEnabled = true;
+            setPictureCountSelectVisible(true);
+
+            //Print(printImage);
+        }
+        void setPictureCountSelectVisible(bool value)
+        {
+            pictureBox4.Visible = value;
+            pictureBox5.Visible = value;
+            pictureBox6.Visible = value;
+            pictureBox6.Visible = value;
+            pictureBox7.Visible = value;
+            pictureBox8.Visible = value;
+            pictureBox9.Visible = value;
+            pictureBox10.Visible = value;
+            pictureBox11.Visible = value;
         }
         void CloseForm(object o, ElapsedEventArgs a)
         {
 
             closingTimer.Stop();
             closingTimer.Elapsed -= new ElapsedEventHandler(CloseForm);
+            coinSelector.OnCoinDetected -= new CoinSelector.CoinDetectedEventHandler(coinSelector_OnCoinDetected);
+            coinSelector.PollingEnabled = false;
             this.Invoke((MethodInvoker)delegate
             {
                 this.Close();
@@ -172,7 +233,7 @@ namespace ImageProcessing
             pictureBox2.Image = cItem.Smile;
 
         }
-        void Print(Bitmap Image)
+        void Print(Bitmap Image,int printCount)
         {   
             printDocument1 = new System.Drawing.Printing.PrintDocument();
             printDocument1.PrintPage += new PrintPageEventHandler(this.printDocument1_PrintPage);
@@ -197,7 +258,8 @@ namespace ImageProcessing
                 printDocument1.PrinterSettings = setting;
             }
             //Image.Save("Image.jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
-            printDocument1.Print();
+            for(int i=0;i<printCount;i++)
+                printDocument1.Print();
         }
         private void printDocument1_PrintPage(object sender, System.Drawing.Printing.PrintPageEventArgs e)
         {
@@ -212,14 +274,7 @@ namespace ImageProcessing
         }
         private void printDocument1_EndPrint(object sender,PrintEventArgs e)
         {
-            this.Invoke((MethodInvoker)delegate
-            {
-                pictureBox3.Image = ImageProcessing.Properties.Resources.alin;
-                pictureBox1.Image = null;
-                pictureBox2.Image = null;
-                closingTimer.Elapsed += new ElapsedEventHandler(CloseForm);
-                closingTimer.Start();
-            });
+            coinSelector.UsedCoin = Settings.Instance.COST;
         }
 
         private void TakePhoto_KeyDown(object sender, KeyEventArgs e)
@@ -256,5 +311,140 @@ namespace ImageProcessing
         {
             CenterComponents();
         }
+
+        private void pictureBox6_Click(object sender, EventArgs e)
+        {
+            copyCount.Count += 1;
+            if (coinSelector.RemainedCoin < copyCount.Count * Settings.Instance.COST)
+                coinSelector.PollingEnabled = true;
+            pictureBox5.Image = generateADImage(copyCount.Count);
+            pictureBox8.Image = generateTotalCoinImage(copyCount.Count * Settings.Instance.COST);
+        }
+
+        private void pictureBox7_Click(object sender, EventArgs e)
+        {
+            if ((copyCount.Count - 1) * Settings.Instance.COST > coinSelector.RemainedCoin)
+            {
+                copyCount.Count -= 1;
+                pictureBox5.Image = generateADImage(copyCount.Count);
+                pictureBox8.Image = generateTotalCoinImage(copyCount.Count * Settings.Instance.COST);
+            }
+        }
+
+        private Image getNumberImage(int number)
+        {
+            switch (number)
+            {
+                case 0: return ImageProcessing.Properties.Resources._0;
+                case 1: return ImageProcessing.Properties.Resources._1;
+                case 2: return ImageProcessing.Properties.Resources._2;
+                case 3: return ImageProcessing.Properties.Resources._3;
+                case 4: return ImageProcessing.Properties.Resources._4;
+                case 5: return ImageProcessing.Properties.Resources._5;
+                case 6: return ImageProcessing.Properties.Resources._6;
+                case 7: return ImageProcessing.Properties.Resources._7;
+                case 8: return ImageProcessing.Properties.Resources._8;
+                case 9: return ImageProcessing.Properties.Resources._9;
+                default: return ImageProcessing.Properties.Resources._0;
+            }
+        }
+        private Image generateADImage(int value)
+        {
+
+            float numberWidth = Resources._0.Width;
+            float totalWidth = Resources.ad.Width + (value > 9 ? numberWidth*2 : numberWidth);
+            int usedWidth = 0;
+            Image image = new Bitmap((int)totalWidth, Resources.ad.Height);
+            Graphics g = Graphics.FromImage(image);
+            if (value > 9)
+            {
+                g.DrawImage(getNumberImage((value / 10) % 10), usedWidth, 0, numberWidth, image.Height);
+                usedWidth += (int)numberWidth;
+            }
+            g.DrawImage(getNumberImage(value % 10), usedWidth, 0, numberWidth, image.Height);
+            usedWidth += (int)numberWidth;
+            g.DrawImage(Resources.ad, usedWidth, 0, Resources.ad.Width, image.Height);
+            return image;
+        }
+        private Image generateCoinImage(double value)
+        {
+            float rate = Resources.tl.Height / (float)Resources._0.Height;
+            float numberWidth = Resources._0.Width * rate;
+            float totalWidth = Resources.inserted.Width + (value > 9.99 ? numberWidth * 4 : numberWidth * 3) + Resources.comma.Width + Resources.tl.Width;
+            int usedWidth = 0;
+            Image image = new Bitmap((int)totalWidth, Resources.tl.Height);
+            Graphics g = Graphics.FromImage(image);
+            g.DrawImage(Resources.inserted, usedWidth, 0, Resources.inserted.Width, image.Height);
+            usedWidth += Resources.inserted.Width;
+            if (value > 9.99)
+            {
+                g.DrawImage(getNumberImage((int)(value / 10) % 10 ), usedWidth, 0, numberWidth, image.Height);
+                usedWidth += (int)numberWidth;
+            }
+            g.DrawImage(getNumberImage((int)value % 10), usedWidth, 0, numberWidth, image.Height);
+            usedWidth += (int)numberWidth;
+            g.DrawImage(Resources.comma, usedWidth, 0, Resources.comma.Width, image.Height);
+            usedWidth += Resources.comma.Width;
+            g.DrawImage(getNumberImage((int)(value * 10) % 10), usedWidth, 0, numberWidth, image.Height);
+            usedWidth += (int)numberWidth;
+            g.DrawImage(getNumberImage((int)(value * 100) % 10), usedWidth, 0, numberWidth, image.Height);
+            usedWidth += (int)numberWidth;
+            g.DrawImage(Resources.tl, usedWidth, 0, Resources.tl.Width, image.Height);
+            return image;
+        }
+        private Image generateTotalCoinImage(double value)
+        {
+            float rate = Resources.tl.Height / (float)Resources._0.Height;
+            float numberWidth = Resources._0.Width * rate;
+            float totalWidth = Resources.toplam.Width + (value > 9.99 ? numberWidth * 4 : numberWidth * 3) + Resources.att.Width;
+            int usedWidth = 0;
+            Image image = new Bitmap((int)totalWidth, Resources.tl.Height);
+            Graphics g = Graphics.FromImage(image);
+            g.DrawImage(Resources.toplam, usedWidth, 0, Resources.toplam.Width, image.Height);
+            usedWidth += Resources.toplam.Width;
+            if (value > 9.99)
+            {
+                g.DrawImage(getNumberImage((int)(value / 10) % 10 ), usedWidth, 0, numberWidth, image.Height);
+                usedWidth += (int)numberWidth;
+            }
+            g.DrawImage(getNumberImage((int)value % 10), usedWidth, 0, numberWidth, image.Height);
+            usedWidth += (int)numberWidth;
+            g.DrawImage(Resources.comma, usedWidth, 0, Resources.comma.Width, image.Height);
+            usedWidth += Resources.comma.Width;
+            g.DrawImage(getNumberImage((int)(value * 10) % 10), usedWidth, 0, numberWidth, image.Height);
+            usedWidth += (int)numberWidth;
+            g.DrawImage(getNumberImage((int)(value * 100) % 10), usedWidth, 0, numberWidth, image.Height);
+            usedWidth += (int)numberWidth;
+            g.DrawImage(Resources.att, usedWidth, 0, Resources.att.Width, image.Height);
+            return image;
+        }
+
+        private void pictureBox10_Click(object sender, EventArgs e)
+        {
+            if (copyCount.Count * Settings.Instance.COST <= coinSelector.RemainedCoin)
+            {
+                Print(printImage, copyCount.Count);
+                setPictureCountSelectVisible(false);
+                pictureBox3.Image = ImageProcessing.Properties.Resources.alin;
+                pictureBox1.Image = null;
+                pictureBox2.Image = null;
+                closingTimer.Elapsed += new ElapsedEventHandler(CloseForm);
+                closingTimer.Start();
+            }
+        }
+
+        private void pictureBox11_Click(object sender, EventArgs e)
+        {
+            if(closingTimer.Enabled)
+                closingTimer.Stop();
+            closingTimer.Elapsed -= new ElapsedEventHandler(CloseForm);
+            coinSelector.OnCoinDetected -= new CoinSelector.CoinDetectedEventHandler(coinSelector_OnCoinDetected);
+            coinSelector.PollingEnabled = false;
+            this.Invoke((MethodInvoker)delegate
+            {
+                this.Close();
+            });
+        }
+
     }
 }

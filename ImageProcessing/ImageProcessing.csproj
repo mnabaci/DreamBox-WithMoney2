@@ -193,12 +193,14 @@
     <EmbeddedResource Include="hand.cur" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\cancel.png" />
+    <None Include="Resources\print.png" />
+    <None Include="Resources\inserted.png" />
     <None Include="Resources\choose.png" />
     <None Include="Resources\toplam.png" />
     <None Include="Resources\tl.png" />
     <None Include="Resources\plus.png" />
     <None Include="Resources\minus.png" />
-    <None Include="Resources\inserted.png" />
     <None Include="Resources\comma.png" />
     <None Include="Resources\att.png" />
     <None Include="Resources\ad.png" />

@@ -26,7 +26,6 @@ namespace ImageProcessing
         CoinSelector coinSelector;
         CoinSelectorError coinSelectorError;
         ImageCollection _selectedImage;
-        System.Timers.Timer coinWaitTimer;
         CopyCount copyCount;
         public MainScreen()
         {
@@ -42,18 +41,11 @@ namespace ImageProcessing
             imageSenderTimer.Tick += imageSenderTimer_Tick;
             imageSenderTimer.Start();
 
-            coinWaitTimer = new System.Timers.Timer();
-            coinWaitTimer.Interval = 60000;
-            coinWaitTimer.Enabled = false;
-            coinWaitTimer.AutoReset = false;
-            coinWaitTimer.Elapsed += coinWaitTimer_Elapsed;
 
             manager = new NikonManager("D40_Mod.md3");
             manager.DeviceAdded += new DeviceAddedDelegate(manager_DeviceAdded);
             manager.DeviceRemoved += new DeviceRemovedDelegate(manager_DeviceRemoved);
 
-            //copyCount = new CopyCount(Settings.Instance.CopyCount);
-            pictureBox7.Image = generateADImage(1);
             viewCount = 3;
             list = new ImageList(viewCount);
             collection = new ImageCollection[viewCount];
@@ -122,7 +114,6 @@ namespace ImageProcessing
                 coinSelectorError = coinSelector.SetEnabledCoins(coinValues);
                 if (coinSelectorError == CoinSelectorError.OK)
                 {
-                    coinSelector.OnCoinDetected += coinSelector_OnCoinDetected; 
                     pictureBox7.Invoke((MethodInvoker)delegate
                     {
                         pictureBox7.Visible = false;
@@ -140,40 +131,6 @@ namespace ImageProcessing
             coinSelectorThread.Abort();
         }
 
-        void coinSelector_OnCoinDetected(object eventObject, CoinDetectedEventArgs args)
-        {
-            coinWaitTimer.Enabled = false;
-            label1.Invoke((MethodInvoker)delegate
-            {
-                label1.Text = Settings.Instance.COST + " TL ile calisir." + Environment.NewLine + "Toplam : " + args.TotalCoinValue + " TL";
-            });
-            if (args.TotalCoinValue >= Settings.Instance.COST)
-            {
-
-                coinSelector.TotalCoin = 0;
-                if (coinSelector.PollingEnabled)
-                    coinSelector.PollingEnabled = false;
-                label1.Invoke((MethodInvoker)delegate
-                {
-                    label1.Visible = false;
-                });
-                coinWaitTimer.Enabled = false;
-                //new TakePhoto(_selectedImage, device).Show();
-            }
-            else
-                coinWaitTimer.Enabled = true;
-        }
-        void coinWaitTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
-        {
-            coinSelector.TotalCoin = 0;
-            if (coinSelector.PollingEnabled)
-                coinSelector.PollingEnabled = false;
-            label1.Invoke((MethodInvoker)delegate
-            {
-                label1.Visible = false;
-            });
-            coinWaitTimer.Enabled = false;
-        }
 
         void imageSenderTimer_Tick(object sender, EventArgs e)
         {
@@ -230,81 +187,8 @@ namespace ImageProcessing
             imageSenderTimer.Start();
 
         }
-        private Image generateCoinImage(double value)
-        {
-            float rate = Resources.tl.Height / (float)Resources._0.Height;
-            float numberWidth = Resources._0.Width * rate;
-            float totalWidth = Resources.inserted.Width + numberWidth * 3 + Resources.comma.Width  + Resources.tl.Width;
-            int usedWidth = 0;
-            Image image = new Bitmap((int)totalWidth, Resources.tl.Height);
-            Graphics g = Graphics.FromImage(image);
-            g.DrawImage(Resources.inserted, usedWidth, 0, Resources.inserted.Width, image.Height);
-            usedWidth += Resources.inserted.Width;
-            g.DrawImage(Resources._0, usedWidth, 0, numberWidth, image.Height);
-            usedWidth += (int)numberWidth;
-            g.DrawImage(Resources.comma, usedWidth, 0, Resources.comma.Width, image.Height);
-            usedWidth += Resources.comma.Width;
-            g.DrawImage(Resources._2, usedWidth, 0, numberWidth, image.Height);
-            usedWidth += (int)numberWidth;
-            g.DrawImage(Resources._5, usedWidth, 0, numberWidth, image.Height);
-            usedWidth += (int)numberWidth;
-            g.DrawImage(Resources.tl, usedWidth, 0, Resources.tl.Width, image.Height);
-            return image;
-        }
-        private Image generateTotalCoinImage(double value)
-        {
-            float rate = Resources.tl.Height / (float)Resources._0.Height;
-            float numberWidth = Resources._0.Width * rate;
-            float totalWidth = Resources.toplam.Width + numberWidth * 4 + Resources.att.Width ;
-            int usedWidth = 0;
-            Image image = new Bitmap((int)totalWidth, Resources.tl.Height);
-            Graphics g = Graphics.FromImage(image);
-            g.DrawImage(Resources.toplam, usedWidth, 0, Resources.toplam.Width, image.Height);
-            usedWidth += Resources.toplam.Width;
-            g.DrawImage(Resources._0, usedWidth, 0, numberWidth, image.Height);
-            usedWidth += (int)numberWidth;
-            g.DrawImage(Resources._1, usedWidth, 0, numberWidth, image.Height);
-            usedWidth += (int)numberWidth;
-            g.DrawImage(Resources.comma, usedWidth, 0, Resources.comma.Width, image.Height);
-            usedWidth += Resources.comma.Width;
-            g.DrawImage(Resources._2, usedWidth, 0, numberWidth, image.Height);
-            usedWidth += (int)numberWidth;
-            g.DrawImage(Resources._5, usedWidth, 0, numberWidth, image.Height);
-            usedWidth += (int)numberWidth;
-            g.DrawImage(Resources.att, usedWidth, 0, Resources.att.Width, image.Height);
-            return image;
-        }
-        private Image generateADImage(double value)
-        {
-            float numberWidth = Resources._0.Width;
-            float totalWidth = Resources.ad.Width + numberWidth*2;
-            int usedWidth = 0;
-            Image image = new Bitmap((int)totalWidth, Resources.ad.Height);
-            Graphics g = Graphics.FromImage(image);
-            g.DrawImage(Resources._0, usedWidth, 0, numberWidth, image.Height);
-            usedWidth += (int)numberWidth;
-            g.DrawImage(Resources._1, usedWidth, 0, numberWidth, image.Height);
-            usedWidth += (int)numberWidth;
-            g.DrawImage(Resources.ad, usedWidth, 0, Resources.ad.Width, image.Height);
-            return image;
-        }
-        private Image getNumberImage(int number)
-        {
-            switch (number)
-            {
-                case 0: return ImageProcessing.Properties.Resources._0;
-                case 1: return ImageProcessing.Properties.Resources._1;
-                case 2: return ImageProcessing.Properties.Resources._2;
-                case 3: return ImageProcessing.Properties.Resources._3;
-                case 4: return ImageProcessing.Properties.Resources._4;
-                case 5: return ImageProcessing.Properties.Resources._5;
-                case 6: return ImageProcessing.Properties.Resources._6;
-                case 7: return ImageProcessing.Properties.Resources._7;
-                case 8: return ImageProcessing.Properties.Resources._8;
-                case 9: return ImageProcessing.Properties.Resources._9;
-                default: return ImageProcessing.Properties.Resources._0;
-            }
-        }
+        
+
         void manager_DeviceAdded(NikonManager sender, NikonDevice device)
         {
             this.device = device;
@@ -331,59 +215,38 @@ namespace ImageProcessing
         {
             if (list.Collection.Count == 0) return;
             if (coinSelector.Connected == false) return;
-            /*if (device == null)
+            if (device == null)
             {
                 AutoClosingMessageBox.Show(this,"Bağlı fotoğraf makinesi bulunamadı. Lütfen kontrol ediniz", "Hata", 3000,MessageBoxIcon.Error);
                 //MessageBox.Show(this,"Bağlı fotoğraf makinesi bulunamadı. Lütfen kontrol ediniz","Hata",MessageBoxButtons.OK,MessageBoxIcon.Error);
                 return;
-            }*/
-            //pictureBox7.Image = generateCoinImage(2.25);
-            label1.Text = Settings.Instance.COST + " TL ile calisir." + Environment.NewLine + "Toplam : 0 TL";
-            label1.Visible = true;
-            _selectedImage = collection[0];
-            //pictureBox7.Visible = true;
-            if (!coinSelector.PollingEnabled)
-                coinSelector.PollingEnabled = true;
-            coinWaitTimer.Enabled = true;
+            }
+            new TakePhoto(collection[0], device, coinSelector).Show();
 
         }
 
         private void pictureBox3_Click(object sender, EventArgs e)
         {
             if (list.Collection.Count == 0) return;
-            /*if (device == null)
+            if (device == null)
             {
                 AutoClosingMessageBox.Show(this,"Bağlı fotoğraf makinesi bulunamadı. Lütfen kontrol ediniz", "Hata", 3000,MessageBoxIcon.Error);
                 //MessageBox.Show(this, "Bağlı fotoğraf makinesi bulunamadı. Lütfen kontrol ediniz", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
-            } */
-            //pictureBox7.Image = generateCoinImage(2.25);
-            label1.Text = Settings.Instance.COST + " TL ile calisir." + Environment.NewLine + "Toplam : 0 TL";
-            label1.Visible = true;
-            _selectedImage = collection[1];
-            //pictureBox7.Visible = true;
-            if (!coinSelector.PollingEnabled)
-                coinSelector.PollingEnabled = true;
-            coinWaitTimer.Enabled = true;
+            }
+            new TakePhoto(collection[1], device, coinSelector).Show();
         }
 
         private void pictureBox4_Click(object sender, EventArgs e)
         {
             if (list.Collection.Count == 0) return;
-            /*if (device == null)
+            if (device == null)
             {
                 AutoClosingMessageBox.Show(this,"Bağlı fotoğraf makinesi bulunamadı. Lütfen kontrol ediniz", "Hata", 3000,MessageBoxIcon.Error);
                 //MessageBox.Show(this, "Bağlı fotoğraf makinesi bulunamadı. Lütfen kontrol ediniz", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
-            }*/
-            //pictureBox7.Image = generateCoinImage(2.25);
-            label1.Text = Settings.Instance.COST + " TL ile calisir." + Environment.NewLine + "Toplam : 0 TL";
-            label1.Visible = true;
-            _selectedImage = collection[2];
-            //pictureBox7.Visible = true;
-            if (!coinSelector.PollingEnabled)
-                coinSelector.PollingEnabled = true;
-            coinWaitTimer.Enabled = true;
+            }
+            new TakePhoto(collection[2], device, coinSelector).Show();
         }
         private void pictureBox5_Click(object sender, EventArgs e)
         {

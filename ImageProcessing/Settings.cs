@@ -25,16 +25,16 @@ namespace ImageProcessing
         }
         #endregion
         #region CopyCount
-        private string copyCount;
-        public string CopyCount
+        private int copyCount;
+        public int CopyCount
         {
             get
             {
-                if (CopyCount == null || CopyCount == string.Empty)
+                if (copyCount == 0 || copyCount == null)
                 {
                     getSettings();
                 }
-                return CopyCount;
+                return copyCount;
             }
         }
         #endregion
@@ -132,7 +132,14 @@ namespace ImageProcessing
                         photoURL = code[0].Trim();
                         break;
                     case "KOPYASAYISI":
-                        photoURL = code[0].Trim();
+                        try
+                        {
+                            copyCount = Int32.Parse(code[0].Trim());
+                        }
+                        catch (FormatException)
+                        {
+                            copyCount = 1;
+                        }
                         break;
                     case "FIYAT":
                         try

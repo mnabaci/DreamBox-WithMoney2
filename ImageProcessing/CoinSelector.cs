@@ -32,6 +32,8 @@ namespace ImageProcessing
         private Timer _tmrPoll;
         private int[] _totalCoinCount;
         private double _totalCoin;
+        private double _usedCoin;
+        private double _remainedCoin;
         private bool _tmrPoolEnabled;
         private int _deviceCount
         {
@@ -89,6 +91,27 @@ namespace ImageProcessing
                     this._totalCoinCount[i] = 0;
             }
         }
+        public double UsedCoin
+        {
+            get
+            {
+                return this._usedCoin;
+            }
+            set
+            {
+                this._usedCoin += value;
+                if (this._usedCoin > this.TotalCoin)
+                    this._usedCoin = this.TotalCoin;
+                this._remainedCoin = this.TotalCoin - this.UsedCoin;
+            }
+        }
+        public double RemainedCoin
+        {
+            get
+            {
+                return this._remainedCoin;
+            }
+        }
         public delegate void CoinDetectedEventHandler(object eventObject, CoinDetectedEventArgs args);
         public event CoinDetectedEventHandler OnCoinDetected;
         public CoinSelector()
@@ -113,6 +136,8 @@ namespace ImageProcessing
             for (int i = 0; i < this._totalCoinCount.Length; i++)
                 this._totalCoinCount[i] = 0;
             this._totalCoin = 0;
+            this._remainedCoin = 0;
+            this._usedCoin = 0;
 
             this.LastError = CoinSelectorError.OK;
             this.Connected = false;
@@ -210,7 +235,8 @@ namespace ImageProcessing
                         this._totalCoin = 0;
                         for (j = 0; j < this._totalCoinCount.Length; j++)
                             this._totalCoin += this._coinValues[j].Value * this._totalCoinCount[j];
-                        CoinDetectedEventArgs args = new CoinDetectedEventArgs(this._totalCoin);
+                        this._remainedCoin = this._totalCoin - this._usedCoin;
+                        CoinDetectedEventArgs args = new CoinDetectedEventArgs(this._totalCoin,this._remainedCoin,this._usedCoin);
                         OnCoinDetected(this, args);
                     }
 
@@ -223,6 +249,8 @@ namespace ImageProcessing
     public class CoinDetectedEventArgs : System.EventArgs
     {
         private double _totalCoinValue;
+        private double _remainedCoinValue;
+        private double _usedCoinValue;
         public double TotalCoinValue
         {
             get
@@ -230,9 +258,25 @@ namespace ImageProcessing
                 return this._totalCoinValue;
             }
         }
-        public CoinDetectedEventArgs(double coinValue)
+        public double RemainedCoinValue
         {
-            this._totalCoinValue = coinValue;
+            get
+            {
+                return this._remainedCoinValue;
+            }
+        }
+        public double UsedCoinValue
+        {
+            get
+            {
+                return this._usedCoinValue;
+            }
+        }
+        public CoinDetectedEventArgs(double totalCoinValue,double remainedCoinValue,double usedCoinValue)
+        {
+            this._totalCoinValue = totalCoinValue;
+            this._usedCoinValue = usedCoinValue;
+            this._remainedCoinValue = remainedCoinValue;
         }
     }
 }

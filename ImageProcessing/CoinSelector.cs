@@ -86,9 +86,79 @@ namespace ImageProcessing
             }
             set
             {
-                this._totalCoin = 0;
+                this._totalCoin = value;
+                double temp = value;
                 for (int i = 0; i < this._totalCoinCount.Length; i++)
+                {
                     this._totalCoinCount[i] = 0;
+                }
+                while (temp > 0)
+                {
+                    if (temp >= CoinValues.TRY100)
+                    {
+                        temp -= CoinValues.TRY100;
+                        for (int i = 0; i < this._coinValues.Length; i++)
+                        {
+                            if (CoinValues.TRY100 == this._coinValues[i].Value)
+                            {
+                                this._totalCoinCount[i]++;
+                                break;
+                            }
+                        }
+                    }
+                    else if (temp >= CoinValues.TRY050)
+                    {
+                        temp -= CoinValues.TRY050;
+                        for (int i = 0; i < this._coinValues.Length; i++)
+                        {
+                            if (CoinValues.TRY050 == this._coinValues[i].Value)
+                            {
+                                this._totalCoinCount[i]++;
+                                break;
+                            }
+                        }
+                    }
+                    else if (temp >= CoinValues.TRY025)
+                    {
+                        temp -= CoinValues.TRY025;
+                        for (int i = 0; i < this._coinValues.Length; i++)
+                        {
+                            if (CoinValues.TRY025 == this._coinValues[i].Value)
+                            {
+                                this._totalCoinCount[i]++;
+                                break;
+                            }
+                        }
+                    }
+                    else if (temp >= CoinValues.TRY010)
+                    {
+                        temp -= CoinValues.TRY010;
+                        for (int i = 0; i < this._coinValues.Length; i++)
+                        {
+                            if (CoinValues.TRY010 == this._coinValues[i].Value)
+                            {
+                                this._totalCoinCount[i]++;
+                                break;
+                            }
+                        }
+                    }
+                    else if (temp >= CoinValues.TRY005)
+                    {
+                        temp -= CoinValues.TRY005;
+                        for (int i = 0; i < this._coinValues.Length; i++)
+                        {
+                            if (CoinValues.TRY005 == this._coinValues[i].Value)
+                            {
+                                this._totalCoinCount[i]++;
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        temp = 0;
+                    }
+                }
             }
         }
         public double UsedCoin
@@ -99,7 +169,7 @@ namespace ImageProcessing
             }
             set
             {
-                this._usedCoin += value;
+                this._usedCoin = value;
                 if (this._usedCoin > this.TotalCoin)
                     this._usedCoin = this.TotalCoin;
                 this._remainedCoin = this.TotalCoin - this.UsedCoin;
@@ -236,7 +306,7 @@ namespace ImageProcessing
                         for (j = 0; j < this._totalCoinCount.Length; j++)
                             this._totalCoin += this._coinValues[j].Value * this._totalCoinCount[j];
                         this._remainedCoin = this._totalCoin - this._usedCoin;
-                        CoinDetectedEventArgs args = new CoinDetectedEventArgs(this._totalCoin,this._remainedCoin,this._usedCoin);
+                        CoinDetectedEventArgs args = new CoinDetectedEventArgs(this._coinValues[cidx].Value,this._totalCoin,this._remainedCoin,this._usedCoin);
                         OnCoinDetected(this, args);
                     }
 
@@ -251,6 +321,7 @@ namespace ImageProcessing
         private double _totalCoinValue;
         private double _remainedCoinValue;
         private double _usedCoinValue;
+        private double _value;
         public double TotalCoinValue
         {
             get
@@ -272,8 +343,16 @@ namespace ImageProcessing
                 return this._usedCoinValue;
             }
         }
-        public CoinDetectedEventArgs(double totalCoinValue,double remainedCoinValue,double usedCoinValue)
+        public double Value
         {
+            get
+            {
+                return this._value;
+            }
+        }
+        public CoinDetectedEventArgs(double value,double totalCoinValue,double remainedCoinValue,double usedCoinValue)
+        {
+            this._value = value;
             this._totalCoinValue = totalCoinValue;
             this._usedCoinValue = usedCoinValue;
             this._remainedCoinValue = remainedCoinValue;

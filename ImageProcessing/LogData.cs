@@ -60,5 +60,56 @@ namespace ImageProcessing
             LogType = logType;
         }
     }
-
+    public class CoinData
+    {
+        public double UsedValue { get; set; }
+        public double RemainedValue { get; set; }
+        public double TotalValue { get; set; }
+        public double Value { get; set; }
+        public CoinData(double value, double usedValue, double remainedValue, double totalValue)
+        {
+            Value = value;
+            UsedValue = usedValue;
+            RemainedValue = remainedValue;
+            TotalValue = totalValue;
+        }
+        public CoinData(double value, double usedValue, double totalValue)
+        {
+            UsedValue = usedValue;
+            TotalValue = totalValue;
+            RemainedValue = TotalValue - UsedValue;
+        }
+    }
+    public class CoinLogData
+    {
+        DateTime _logTime;
+        public DateTime LogTime
+        {
+            get
+            {
+                return _logTime;
+            }
+            private set
+            {
+                _logTime = value;
+            }
+        }
+        CoinData _coinData;
+        public CoinData CoinData
+        {
+            get
+            {
+                return _coinData;
+            }
+            private set
+            {
+                _coinData = value;
+            }
+        }
+        public CoinLogData(CoinData coinData)
+        {
+            LogTime = DateTime.Now;
+            CoinData = coinData;
+        }
+    }
 }

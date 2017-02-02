@@ -40,6 +40,9 @@ namespace ImageProcessing
             coinSelector = selector;
             coinSelector.OnCoinDetected += coinSelector_OnCoinDetected;
             coinSelector.PollingEnabled = false;
+            CoinData coinData = LogManager.GetLastCoinData();
+            coinSelector.TotalCoin = coinData.TotalValue;
+            coinSelector.UsedCoin = coinData.UsedValue;
             // Hook up device capture events
             this.device = device;
             device.ImageReady += new ImageReadyDelegate(device_ImageReady);
@@ -76,6 +79,7 @@ namespace ImageProcessing
         void coinSelector_OnCoinDetected(object eventObject, CoinDetectedEventArgs args)
         {
             coinWaitTimer.Enabled = false;
+            LogManager.LogCoinData(new CoinLogData(new CoinData(args.Value,args.UsedCoinValue, args.RemainedCoinValue, args.TotalCoinValue)));
             pictureBox9.Invoke((MethodInvoker)delegate
             {
                 pictureBox9.Image = generateCoinImage(args.RemainedCoinValue);
@@ -86,9 +90,11 @@ namespace ImageProcessing
                 if (coinSelector.PollingEnabled)
                     coinSelector.PollingEnabled = false;
                 coinWaitTimer.Enabled = false;
+                setPictureCountSelectVisible(false);
+                pictureBox10_Click(null, null);
                 pictureBox10.Invoke((MethodInvoker)delegate
                 {
-                    pictureBox10.Visible = true;
+                    pictureBox10.Visible = false;
                 });
             }
             else
@@ -214,7 +220,8 @@ namespace ImageProcessing
             }
             else
             {
-                pictureBox10.Visible = true;
+                pictureBox10_Click(null, null);
+                pictureBox10.Visible = false;
                 coinSelector.PollingEnabled = false;
             }
             double remainingValue = Settings.Instance.COST * copyCount.Count - coinSelector.RemainedCoin;
@@ -227,19 +234,20 @@ namespace ImageProcessing
                 enabledValues[2] = CoinValues.TRY100;
             coinSelector.SetEnabledCoins(enabledValues);
             setPictureCountSelectVisible(true);
-
-            //Print(printImage);
         }
         void setPictureCountSelectVisible(bool value)
         {
-            pictureBox4.Visible = value;
-            pictureBox5.Visible = value;
-            pictureBox6.Visible = value;
-            pictureBox6.Visible = value;
-            pictureBox7.Visible = value;
-            pictureBox8.Visible = value;
-            pictureBox9.Visible = value;
-            pictureBox11.Visible = value;
+            pictureBox4.Invoke((MethodInvoker)delegate
+            {
+                pictureBox4.Visible = value;
+                pictureBox5.Visible = value;
+                pictureBox6.Visible = value;
+                pictureBox6.Visible = value;
+                pictureBox7.Visible = value;
+                pictureBox8.Visible = value;
+                pictureBox9.Visible = value;
+                pictureBox11.Visible = value;
+            });
         }
         void CloseForm(object o, ElapsedEventArgs a)
         {
@@ -358,7 +366,8 @@ namespace ImageProcessing
         }
         private void printDocument1_EndPrint(object sender,PrintEventArgs e)
         {
-            coinSelector.UsedCoin = Settings.Instance.COST;
+            coinSelector.UsedCoin += Settings.Instance.COST;
+            LogManager.LogCoinData(new CoinLogData(new CoinData(0, coinSelector.UsedCoin, coinSelector.RemainedCoin, coinSelector.TotalCoin)));
         }
 
         private void TakePhoto_KeyDown(object sender, KeyEventArgs e)

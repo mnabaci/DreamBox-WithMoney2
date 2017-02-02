@@ -31,6 +31,7 @@ namespace ImageProcessing
             CenterComponents();
             this.Cursor = new Cursor(GetType(), "hand128.cur");
 
+            LogManager.Log(new LogData("Uygulama başlatılıyor."));
             coinSelectorThread = new System.Threading.Thread(new System.Threading.ThreadStart(coinSelectorThreadFunction));
             coinSelectorThread.Start();
 
@@ -57,8 +58,8 @@ namespace ImageProcessing
             }
             catch (NoItemFoundException)
             {
-                AutoClosingMessageBox.Show(this,"Sisteme kayıtlı fotoğraf bulunamadı", "Hata", 3000,MessageBoxIcon.Error);
-               // MessageBox.Show(this, "Sisteme kayıtlı fotoğraf bulunamadı.","Hata",MessageBoxButtons.OK,MessageBoxIcon.Error);
+                AutoClosingMessageBox.Show(this, "Sisteme kayıtlı fotoğraf bulunamadı", "Hata", 3000, MessageBoxIcon.Error);
+                LogManager.Log(new LogData("Sisteme kayıtlı fotoğraf bulunamadı.", LogType.Error));
             }
         }
 
@@ -69,8 +70,6 @@ namespace ImageProcessing
             int width = Width - (Width / 20);
             int oneParcelWidth = width / 23;
             int oneParcelHeight = (Height / 25);
-            /*button1.Top = ClientSize.Height - button1.Height - oneParcelHeight;
-            button1.Left = (ClientSize.Width - button1.Width) / 2;*/
             pictureBox1.Height = oneParcelHeight *4;
             pictureBox1.Width = oneParcelWidth * 12;
             pictureBox1.Top = oneParcelHeight;
@@ -173,7 +172,7 @@ namespace ImageProcessing
                     }
                     else
                     {
-                        LogManager.Log(new LogData("Sunucuya giriş yapılamadı. Giriş bilgilerinizi kontrol ediniz",LogType.Error));
+                        LogManager.Log(new LogData("Sunucuya giriş yapılamadı.",LogType.Error));
                         return;
                     }
                         
@@ -196,18 +195,7 @@ namespace ImageProcessing
         {
             this.device = null;
         }
-        private void button1_MouseHover(object sender, EventArgs e)
-        {
-        }
 
-        private void button1_MouseEnter(object sender, EventArgs e)
-        {
-           
-        }
-
-        private void tableLayoutPanel5_Paint(object sender, PaintEventArgs e)
-        {
-        }
 
         private void pictureBox2_Click(object sender, EventArgs e)
         {
@@ -215,8 +203,8 @@ namespace ImageProcessing
             if (coinSelector.Connected == false) return;
             if (device == null)
             {
-                AutoClosingMessageBox.Show(this,"Bağlı fotoğraf makinesi bulunamadı. Lütfen kontrol ediniz", "Hata", 3000,MessageBoxIcon.Error);
-                //MessageBox.Show(this,"Bağlı fotoğraf makinesi bulunamadı. Lütfen kontrol ediniz","Hata",MessageBoxButtons.OK,MessageBoxIcon.Error);
+                AutoClosingMessageBox.Show(this, "Bağlı fotoğraf makinesi bulunamadı. Lütfen kontrol ediniz", "Hata", 3000, MessageBoxIcon.Error);
+                LogManager.Log(new LogData("Bağlı fotoğraf makinesi bulunamadı.", LogType.Error));
                 return;
             }
             new TakePhoto(collection[0], device, coinSelector).Show();
@@ -228,8 +216,8 @@ namespace ImageProcessing
             if (list.Collection.Count == 0) return;
             if (device == null)
             {
-                AutoClosingMessageBox.Show(this,"Bağlı fotoğraf makinesi bulunamadı. Lütfen kontrol ediniz", "Hata", 3000,MessageBoxIcon.Error);
-                //MessageBox.Show(this, "Bağlı fotoğraf makinesi bulunamadı. Lütfen kontrol ediniz", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                AutoClosingMessageBox.Show(this, "Bağlı fotoğraf makinesi bulunamadı. Lütfen kontrol ediniz", "Hata", 3000, MessageBoxIcon.Error);
+                LogManager.Log(new LogData("Bağlı fotoğraf makinesi bulunamadı.", LogType.Error));
                 return;
             }
             new TakePhoto(collection[1], device, coinSelector).Show();
@@ -240,8 +228,8 @@ namespace ImageProcessing
             if (list.Collection.Count == 0) return;
             if (device == null)
             {
-                AutoClosingMessageBox.Show(this,"Bağlı fotoğraf makinesi bulunamadı. Lütfen kontrol ediniz", "Hata", 3000,MessageBoxIcon.Error);
-                //MessageBox.Show(this, "Bağlı fotoğraf makinesi bulunamadı. Lütfen kontrol ediniz", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                AutoClosingMessageBox.Show(this, "Bağlı fotoğraf makinesi bulunamadı. Lütfen kontrol ediniz", "Hata", 3000, MessageBoxIcon.Error);
+                LogManager.Log(new LogData("Bağlı fotoğraf makinesi bulunamadı.", LogType.Error));
                 return;
             }
             new TakePhoto(collection[2], device, coinSelector).Show();
@@ -309,17 +297,5 @@ namespace ImageProcessing
         {
             CenterComponents();
         }
-
-        private void btnIncrease_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void btnDecrease_Click(object sender, EventArgs e)
-        {
-
-        }
-
-
     }
 }

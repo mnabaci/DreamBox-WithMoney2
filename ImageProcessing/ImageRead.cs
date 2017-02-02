@@ -18,11 +18,6 @@ namespace ImageProcessing
         {
             try
             {
-                
-                System.IO.StreamWriter file =
-                    new System.IO.StreamWriter("test.txt", true);
-                file.WriteLine(_path + "/" + _count + "/" + "bg.png");
-                file.Close();
                 if (Directory.Exists(_path + "/" + _count))
                 {
                     CurrentImage = new ImageCollection();

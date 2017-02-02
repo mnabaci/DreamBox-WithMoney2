@@ -129,6 +129,50 @@ namespace ImageProcessing
             pictureBox1.Left = (ClientSize.Width - pictureBox1.Width) / 2;
             pictureBox2.Left = (ClientSize.Width - pictureBox1.Width) / 2;
             pictureBox3.Left = (ClientSize.Width - pictureBox1.Width) / 2;
+
+            int width = Width - (Width / 20);
+            int oneParcelWidth = width / 24;
+            int oneParcelHeight = (Height / 25);
+
+            pictureBox4.Width = oneParcelWidth * 8;
+            pictureBox4.Height = oneParcelHeight * 3;
+            pictureBox4.Top = oneParcelHeight / 2;
+            pictureBox4.Left = (ClientSize.Width - pictureBox4.Width) / 2;
+
+            pictureBox8.Width = oneParcelWidth * 8;
+            pictureBox8.Height = oneParcelHeight * 2;
+            pictureBox8.Top = pictureBox4.Top + pictureBox4.Height + oneParcelHeight / 2;
+            pictureBox8.Left = Width / 20 + oneParcelWidth;
+
+            pictureBox9.Width = oneParcelWidth * 8;
+            pictureBox9.Height = oneParcelHeight * 2;
+            pictureBox9.Top = pictureBox8.Top + pictureBox8.Height;
+            pictureBox9.Left = Width / 20 + oneParcelWidth;
+
+            pictureBox5.Width = oneParcelWidth * 3;
+            pictureBox5.Height = oneParcelHeight * 6;
+            pictureBox5.Top = pictureBox8.Top - oneParcelHeight;
+            pictureBox5.Left = pictureBox8.Left + pictureBox8.Width + oneParcelWidth *2;
+
+            pictureBox6.Width = oneParcelWidth;
+            pictureBox6.Height = oneParcelHeight * 3;
+            pictureBox6.Top = pictureBox5.Top;
+            pictureBox6.Left = pictureBox5.Left + pictureBox5.Width;
+
+            pictureBox7.Width = oneParcelWidth;
+            pictureBox7.Height = oneParcelHeight * 3;
+            pictureBox7.Top = pictureBox6.Top + pictureBox6.Height;
+            pictureBox7.Left = pictureBox5.Left + pictureBox5.Width;
+
+            pictureBox10.Width = oneParcelWidth * 3;
+            pictureBox10.Height = oneParcelHeight * 3;
+            pictureBox10.Top = pictureBox5.Top;
+            pictureBox10.Left = pictureBox6.Left + pictureBox6.Width + oneParcelWidth / 2;
+
+            pictureBox11.Width = oneParcelWidth * 3;
+            pictureBox11.Height = oneParcelHeight * 3;
+            pictureBox11.Top = pictureBox10.Top + pictureBox10.Height;
+            pictureBox11.Left = pictureBox6.Left + pictureBox6.Width + oneParcelWidth / 2;
         }
         void device_ImageReady(NikonDevice sender, NikonImage image)
         {
@@ -251,16 +295,18 @@ namespace ImageProcessing
                         pictureBox3.Image = null;
                         pictureBox1.Image = ImageProcessing.Properties.Resources.lowbattery;
                         pictureBox2.Image = null;
+                        return;
                     }
                     else if (ex.ErrorCode == eNkMAIDResult.kNkMAIDResult_UnexpectedError)
                     {
                         pictureBox3.Image = null;
                         pictureBox1.Image = ImageProcessing.Properties.Resources.unknownerror;
                         pictureBox2.Image = null;
+                        return;
                     }
-                    /*
-                    closingTimer.Elapsed += new ElapsedEventHandler(CloseForm);
-                    closingTimer.Start();*/
+                    closingTimer.Stop();
+                    closingTimer.Enabled = false;
+                    ClosingTimerStarted = false;
                     counter = new Counter();
                     timer.Enabled = true;
                     timer.Start();
@@ -492,6 +538,7 @@ namespace ImageProcessing
             {
                 Print(printImage, copyCount.Count);
                 setPictureCountSelectVisible(false);
+                pictureBox10.Visible = false;
                 pictureBox3.Image = ImageProcessing.Properties.Resources.alin;
                 pictureBox1.Image = null;
                 pictureBox2.Image = null;

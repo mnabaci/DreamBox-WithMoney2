@@ -45,7 +45,6 @@ C:\Users\microsoft\Desktop\ImageProcessing1 - Kopya\ImageProcessing\obj\Release\
 C:\Users\microsoft\Desktop\ImageProcessing1 - Kopya\ImageProcessing\obj\Release\ImageProcessing.TakePhoto.resources
 C:\Users\microsoft\Desktop\ImageProcessing1 - Kopya\ImageProcessing\obj\Release\ImageProcessing.csproj.GenerateResource.Cache
 C:\Users\microsoft\Documents\GitHub\DreamBox - WithMoney\ImageProcessing\bin\Release\ImageProcessing.exe.config
-C:\Users\microsoft\Documents\GitHub\DreamBox - WithMoney\ImageProcessing\obj\Release\ImageProcessing.csprojResolveAssemblyReference.cache
 C:\Users\microsoft\Documents\GitHub\DreamBox - WithMoney\ImageProcessing\obj\Release\ImageProcessing.MainScreen.resources
 C:\Users\microsoft\Documents\GitHub\DreamBox - WithMoney\ImageProcessing\obj\Release\ImageProcessing.Properties.Resources.resources
 C:\Users\microsoft\Documents\GitHub\DreamBox - WithMoney\ImageProcessing\obj\Release\ImageProcessing.TakePhoto.resources
@@ -62,3 +61,4 @@ C:\Users\microsoft\Documents\GitHub\DreamBox - WithMoney\ImageProcessing\bin\Rel
 C:\Users\microsoft\Documents\GitHub\DreamBox - WithMoney\ImageProcessing\bin\Release\AForge.Math.xml
 C:\Users\microsoft\Documents\GitHub\DreamBox - WithMoney\ImageProcessing\obj\Release\ImageProcessing.exe
 C:\Users\microsoft\Documents\GitHub\DreamBox - WithMoney\ImageProcessing\obj\Release\ImageProcessing.pdb
+C:\Users\microsoft\Documents\GitHub\DreamBox - WithMoney\ImageProcessing\obj\Release\ImageProcessing.csprojResolveAssemblyReference.cache

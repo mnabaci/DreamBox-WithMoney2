@@ -154,6 +154,11 @@ namespace ImageProcessing
                         LogManager.Log(new LogData(string.Format("{0}.{1} sunucuya yüklenirken hata oluştu.", d.ImageID, d.ImageType), LogType.Warning));
                     }
                 }
+                catch (System.IO.FileNotFoundException)
+                {
+                    while (!sql.SetSend(d.ImageID)) ;
+                    LogManager.Log(new LogData(string.Format("{0}.{1} bulunamadığından sunucuya yüklenemedi.", d.ImageID, d.ImageType), LogType.Error));
+                }
                 catch (UnAutExeption)
                 {
                     LogManager.Log(new LogData("Sunucu kullanıcı hatası. Tekrar giriş yapılıyor..."));
